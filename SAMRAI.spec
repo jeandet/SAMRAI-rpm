@@ -1,32 +1,17 @@
-# Patch version?
-
 %global snaprel %{nil}
 
-# NOTE: Try not to release new versions to released versions of Fedora
-
-# You need to recompile all users of HDF5 for each version change
-
 Name: SAMRAI
-
 Version: 1.0.0
-
 %define src_dir   %{name}-%{version}
-
 Release: 0%{?dist}
-
 Summary: A general purpose library and file format for storing scientific data
-
 License: GPLv2.1
-
 Group: System Environment/Libraries
-
 URL: https://github.com/monwarez/SAMRAI
-
-BuildRequires: gcc-gfortran, gcc, gcc-c++, cmake
+BuildRequires: gcc-gfortran, gcc, gcc-c++, cmake, git, hdf5-openmpi-devel, openmpi-devel, m4, boost-openmpi-devel
 
 
 %description
-
 SAMRAI (Structured Adaptive Mesh Refinement Application Infrastructure) is an object-oriented C++ software library
 that enables exploration of numerical, algorithmic, parallel computing, and software issues associated with applying
 structured adaptive mesh refinement (SAMR) technology in large-scale parallel application development.
@@ -36,59 +21,20 @@ numerical solution methods, and which require high-performance parallel computin
 in new application domains.
 
 %package devel
-
 Summary: SAMRAI development files
-
 Group: Development/Libraries
-
-Requires: %{name}%{?_isa} = %{version}-%{release}
-
-Requires: hdf5-devel%{?_isa}
-
 %description devel
-
 SAMRAI development headers and libraries.
 
 
-%package openmpi
-
-Summary: SAMRAI openmpi libraries
-
-Group: Development/Libraries
-
-BuildRequires: openmpi-devel, hdf5-openmpi-devel
-
-%description openmpi
-
-SAMRAI parallel openmpi libraries
-
-%package openmpi-devel
-
-Summary: SAMRAI openmpi development files
-
-Group: Development/Libraries
-
-Requires: %{name}-openmpi%{?_isa} = %{version}-%{release}
-
-Requires: openmpi-devel%{?_isa}
-
-%description openmpi-devel
-
-SAMRAI parallel openmpi development files
-
-
-
-
-
 %prep
-
 git clone %{URL} ${SAMRAI_SRCDIR} --branch add-install --recursive %{src_dir}
 cd %{src_dir}
 
 
-# Modify low optimization level for gnu compilers
-
+%build
 %define dobuild() \
+cd %{src_dir} \
 mkdir $MPI_COMPILER; \
 cd $MPI_COMPILER;  \
 export CXXFLAGS="%{optflags} -Wl,--as-needed"; \
@@ -98,22 +44,52 @@ cd .. ; \
 
 
 # Set compiler variables to MPI wrappers
-
 export CC=mpicc
-
 export CXX=mpicxx
-
 export FC=mpif90
-
 export F77=mpif77
 
 ## Build OpenMPI version
-
 %{_openmpi_load}
-
 %dobuild
-
 %{_openmpi_unload}
+
+%check 
+%define docheck() \
+export  CTEST_OUTPUT_ON_FAILURE=1; \
+cd %{src_dir}/$MPI_COMPILER ; \
+ctest -V %{?_smp_mflags}; \
+cd .. ; \
+
+
+## Test OpenMPI version
+%{_openmpi_load}
+%docheck
+%{_openmpi_unload}
+
+
+%install
+
+## Install OpenMPI version
+%{_openmpi_load}
+echo $(pwd)
+make -C %{src_dir}/$MPI_COMPILER install DESTDIR=%{buildroot} INSTALL="install -p" CPPROG="cp -p"
+%{_openmpi_unload}
+
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+
+
+%files
+%{_libdir}/*
+
+%files devel
+%{_includedir}/*
+%{_datarootdir}/SAMRAI/cmake/*
+
+
 
 %changelog
 
