@@ -3,13 +3,24 @@
 Name: SAMRAI
 Version: 1.0.0
 %define src_dir   %{name}-%{version}
-Release: 0%{?dist}
+Release: 1%{?dist}
 Summary: A general purpose library and file format for storing scientific data
 License: GPLv2.1
 Group: System Environment/Libraries
 URL: https://github.com/monwarez/SAMRAI
-BuildRequires: gcc-gfortran, gcc, gcc-c++, cmake, git, hdf5-openmpi-devel, openmpi-devel, m4, boost-openmpi-devel
+BuildRequires: gcc-gfortran
+BuildRequires: gcc
+BuildRequires: gcc-c++
+BuildRequires: cmake
+BuildRequires: git
+BuildRequires: hdf5-openmpi-devel
+BuildRequires: openmpi-devel
+BuildRequires: m4
+BuildRequires: boost-openmpi-devel
 
+Requires: openmpi
+Requires: hdf5-openmpi
+Requires: boost-openmpi
 
 %description
 SAMRAI (Structured Adaptive Mesh Refinement Application Infrastructure) is an object-oriented C++ software library
@@ -26,6 +37,18 @@ Group: Development/Libraries
 %description devel
 SAMRAI development headers and libraries.
 
+%package openmpi
+Summary: SAMRAI openmpi version
+Group: Development/Libraries
+Requires: openmpi
+%description openmpi
+
+%package openmpi-devel
+Summary: SAMRAI openmpi development files
+Group: Development/Libraries
+Requires: %{name}-openmpi = %{version}-%{release}
+%description openmpi-devel
+
 
 %prep
 git clone %{URL} ${SAMRAI_SRCDIR} --branch add-install --recursive %{src_dir}
@@ -38,7 +61,7 @@ cd %{src_dir} \
 mkdir $MPI_COMPILER; \
 cd $MPI_COMPILER;  \
 export CXXFLAGS="%{optflags} -Wl,--as-needed"; \
-%cmake -DINSTALL_CMAKE_DIR="%{_libdir}/cmake/" -DCMAKE_C_COMPILER="mpicc" -DCMAKE_CXX_COMPILER="mpic++" -DCMAKE_FORTRAN_COMPILER="mpif90" -DCMAKE_BUILD_TYPE=Release .. ; \
+%cmake -DINSTALL_CMAKE_DIR="%{_libdir}/cmake/" -DCMAKE_C_COMPILER="mpicc" -DCMAKE_CXX_COMPILER="mpic++" -DCMAKE_FORTRAN_COMPILER="mpif90" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_BINDIR="$MPI_BIN" -DCMAKE_INSTALL_LIBDIR="$MPI_LIB" -DPYTHON_SITE_PACKAGES="$MPI_PYTHON_SITEARCH" .. ; \
 make %{?_smp_mflags}; \
 cd .. ; \
 
@@ -54,7 +77,7 @@ export F77=mpif77
 %dobuild
 %{_openmpi_unload}
 
-%check 
+%check
 %define docheck() \
 export  CTEST_OUTPUT_ON_FAILURE=1; \
 cd %{src_dir}/$MPI_COMPILER ; \
@@ -81,11 +104,12 @@ make -C %{src_dir}/$MPI_COMPILER install DESTDIR=%{buildroot} INSTALL="install -
 %postun -p /sbin/ldconfig
 
 
-
 %files
+
+%files openmpi
 %{_libdir}/*
 
-%files devel
+%files openmpi-devel
 %{_includedir}/*
 %{_datarootdir}/SAMRAI/cmake/*
 
