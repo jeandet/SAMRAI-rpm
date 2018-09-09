@@ -3,7 +3,7 @@
 Name: SAMRAI
 Version: 1.0.0
 %define src_dir   %{name}-%{version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: A general purpose library and file format for storing scientific data
 License: GPLv2.1
 Group: System Environment/Libraries
@@ -43,12 +43,6 @@ Group: Development/Libraries
 Requires: openmpi
 %description openmpi
 
-%package openmpi-devel
-Summary: SAMRAI openmpi development files
-Group: Development/Libraries
-Requires: %{name}-openmpi = %{version}-%{release}
-%description openmpi-devel
-
 
 %prep
 git clone %{URL} ${SAMRAI_SRCDIR} --branch add-install --recursive %{src_dir}
@@ -61,7 +55,7 @@ cd %{src_dir} \
 mkdir $MPI_COMPILER; \
 cd $MPI_COMPILER;  \
 export CXXFLAGS="%{optflags} -Wl,--as-needed"; \
-%cmake -DINSTALL_CMAKE_DIR="%{_libdir}/cmake/" -DCMAKE_C_COMPILER="mpicc" -DCMAKE_CXX_COMPILER="mpic++" -DCMAKE_FORTRAN_COMPILER="mpif90" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_BINDIR="$MPI_BIN" -DCMAKE_INSTALL_LIBDIR="$MPI_LIB" -DPYTHON_SITE_PACKAGES="$MPI_PYTHON_SITEARCH" .. ; \
+%cmake -DINSTALL_CMAKE_DIR="%{_libdir}/cmake/" -DENABLE_COPY_HEADERS=ON -DCMAKE_C_COMPILER="mpicc" -DCMAKE_CXX_COMPILER="mpic++" -DCMAKE_FORTRAN_COMPILER="mpif90" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_BINDIR="$MPI_BIN" -DCMAKE_INSTALL_LIBDIR="$MPI_LIB" -DPYTHON_SITE_PACKAGES="$MPI_PYTHON_SITEARCH" .. ; \
 make %{?_smp_mflags}; \
 cd .. ; \
 
@@ -95,7 +89,6 @@ cd .. ; \
 
 ## Install OpenMPI version
 %{_openmpi_load}
-echo $(pwd)
 make -C %{src_dir}/$MPI_COMPILER install DESTDIR=%{buildroot} INSTALL="install -p" CPPROG="cp -p"
 %{_openmpi_unload}
 
@@ -109,7 +102,7 @@ make -C %{src_dir}/$MPI_COMPILER install DESTDIR=%{buildroot} INSTALL="install -
 %files openmpi
 %{_libdir}/*
 
-%files openmpi-devel
+%files devel
 %{_includedir}/*
 %{_datarootdir}/SAMRAI/cmake/*
 
