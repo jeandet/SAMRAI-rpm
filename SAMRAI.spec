@@ -3,11 +3,11 @@
 Name: SAMRAI
 Version: 1.0.0
 %define src_dir   %{name}-%{version}
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: A general purpose library and file format for storing scientific data
 License: GPLv2.1
 Group: System Environment/Libraries
-URL: https://github.com/monwarez/SAMRAI
+URL: https://github.com/LLNL/SAMRAI
 BuildRequires: gcc-gfortran
 BuildRequires: gcc
 BuildRequires: gcc-c++
@@ -45,7 +45,7 @@ Requires: openmpi
 
 
 %prep
-git clone %{URL} ${SAMRAI_SRCDIR} --branch add-install --recursive %{src_dir}
+git clone %{URL} ${SAMRAI_SRCDIR} --branch feature/blt --recursive %{src_dir}
 cd %{src_dir}
 
 
@@ -110,6 +110,8 @@ make -C %{src_dir}/$MPI_COMPILER install DESTDIR=%{buildroot} INSTALL="install -
 
 %changelog
 
-* Sat Sep 8 2018 Alexis Jeandet <alexis.jeandet@member.fsf.org> - 1.0.0-0
+* Wed Oct 3 2018 Alexis Jeandet <alexis.jeandet@member.fsf.org> - 1.0.0-3
+- Switch to upstream repository feature/blt branch
 
+* Sat Sep 8 2018 Alexis Jeandet <alexis.jeandet@member.fsf.org> - 1.0.0-0
 - First setup
