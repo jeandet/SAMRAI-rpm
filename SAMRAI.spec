@@ -3,7 +3,7 @@
 Name: SAMRAI
 Version: 1.0.0
 %define src_dir   %{name}-%{version}
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: A general purpose library and file format for storing scientific data
 License: GPLv2.1
 Group: System Environment/Libraries
@@ -43,7 +43,7 @@ Group: Development/Libraries
 Requires: openmpi
 %description openmpi
 
-
+%debug_package
 %prep
 git clone %{URL} ${SAMRAI_SRCDIR} --branch feature/blt --recursive %{src_dir}
 cd %{src_dir}
@@ -109,6 +109,9 @@ make -C %{src_dir}/$MPI_COMPILER install DESTDIR=%{buildroot} INSTALL="install -
 
 
 %changelog
+
+* Thu Nov 8 2018 Alexis Jeandet <alexis.jeandet@member.fsf.org> - 1.0.0-4
+- Added debuginfo packages
 
 * Wed Oct 3 2018 Alexis Jeandet <alexis.jeandet@member.fsf.org> - 1.0.0-3
 - Switch to upstream repository feature/blt branch
